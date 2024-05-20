@@ -18,6 +18,7 @@ const { TextArea } = Input;
 function App() {
   const [UR, setUR] = useState(60);
   const [RS, setRS] = useState(500);
+  const [second, setSecond] = useState(2);
   const [UA, setUA] = useState([]);
   const [ZX, setZX] = useState([]);
   const [lineData, setLineData] = useState([]);
@@ -43,11 +44,15 @@ function App() {
   }, []);
 
   const changeRS = useCallback((value) => {
-    setRS(parseFloat(value));
+    setRS(parseFloat(value) || 500);
   }, []);
   const changeUR = useCallback((value) => {
-    setUR(parseFloat(value));
+    setUR(parseFloat(value) || 60);
   }, []);
+  const changeSecond = useCallback((value) => {
+    setSecond(value || 2);
+  }, []);
+
   const successTranfer = useCallback((value) => {
     setUA(value);
   }, []);
@@ -57,41 +62,10 @@ function App() {
     });
     setZX(zx)
     console.log(zx)
-    const timers = createTimeNodes(zx.length, 2);
+    const timers = createTimeNodes(zx.length, second);
     const lines = mergeArraysToData(timers, zx);
     setLineData(lines); // 更新折线图数据
-    // let index = 0;
-    // const batchSize = 100; // 每批处理 100 项
-    // const totalItems = UA.length;
-    // let localZX = []; // 本地存储 ZX 数据，用于逐步更新
-
-    // const processBatch = () => {
-    //   // 本批次的 ZX 计算
-    //   const nextBatchZX = UA.slice(index, index + batchSize).map((ua) =>
-    //     calculateImpedance(ua, UR, RS)
-    //   );
-    //   localZX = [...localZX, ...nextBatchZX];
-    //   setZX(localZX); // 更新 ZX 状态
-
-    //   // 更新进度
-    //   index += batchSize;
-
-    //   // 创建折线图数据
-    //   const timers = createTimeNodes(localZX.length, 2);
-    //   const lines = mergeArraysToData(timers, localZX);
-    //   setLineData(lines); // 更新折线图数据
-
-    //   if (index < totalItems) {
-    //     requestAnimationFrame(processBatch);
-    //   } else {
-    //     console.log("处理完成");
-    //   }
-    // };
-
-    // setZX([]); // 清空 ZX 数据
-    // setLineData([]); // 清空折线图数据
-    // processBatch(); // 开始处理
-  }, [UA, UR, RS]);
+  }, [UA, second, UR, RS]);
   // 创建并下载文本文件的函数
   const downloadZXData = () => {
     // 将数组转换为字符串，使用英文逗号分隔
@@ -149,6 +123,7 @@ const downloadLineData = () => {
         <div className="downloadBtn">
           <span>UR：</span>
           <InputNumber
+            addonAfter="V"
             style={{ width: 200 }}
             step="0.000001"
             onChange={changeUR}
@@ -159,11 +134,23 @@ const downloadLineData = () => {
         <div className="downloadBtn">
           <span>RS：</span>
           <InputNumber
+            addonAfter="Ω"
             style={{ width: 200 }}
             step="0.000001"
             onChange={changeRS}
             stringMode
             value={RS}
+          />
+        </div>
+        <div className="downloadBtn">
+          <span>数据时长：</span>
+          <InputNumber
+            addonAfter="s"
+            style={{ width: 155 }}
+            step="1"
+            min={1}
+            onChange={changeSecond}
+            value={second}
           />
         </div>
         <div className="downloadBtn">
