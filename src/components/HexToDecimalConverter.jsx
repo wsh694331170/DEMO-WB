@@ -26,7 +26,7 @@ const HexToDecimalConverter = (props) => {
       beforeUpload={beforeUpload}
       showUploadList={false}
     >
-      <Button icon={<UploadOutlined />}>选择串口数据</Button>
+      <Button icon={<UploadOutlined />}>读取串口数据</Button>
     </Upload>
   );
 };

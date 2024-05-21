@@ -19,3 +19,29 @@
   border: none;
   box-shadow: none;
 }
+
+.container .item1 {
+  flex: 0 0 calc(80% - 24px);
+}
+
+.container .item2 {
+  flex: 0 0 calc(20% - 24px);
+}
+
+.container .item3 {
+  flex: 0 0 calc(60% - 24px);
+}
+
+.container .item4 {
+  flex: 0 0 calc(40% - 24px);
+}
+
+/* Media query for small screens */
+@media (max-width: 600px) {
+  .container .item1,
+  .container .item2,
+  .container .item3,
+  .container .item4 {
+    flex: 0 0 100%;
+  }
+}

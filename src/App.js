@@ -1,4 +1,14 @@
-import { Button, InputNumber, Input, Card, Flex, Timeline } from "antd";
+import {
+  Button,
+  InputNumber,
+  Input,
+  Card,
+  Flex,
+  Timeline,
+  Watermark,
+  message,
+  Spin,
+} from "antd";
 import { DownloadOutlined } from "@ant-design/icons";
 import { useState, useRef, useCallback } from "react";
 import { saveAs } from "file-saver";
@@ -22,6 +32,7 @@ function App() {
   const [UA, setUA] = useState([]);
   const [ZX, setZX] = useState([]);
   const [lineData, setLineData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const lineRef = useRef();
 
   const downloadDivAsImage = useCallback(async () => {
@@ -55,8 +66,10 @@ function App() {
 
   const successTranfer = useCallback((value) => {
     setUA(value);
+    message.success("串口数据读取成功！");
   }, []);
   const handleCalculateImpedance = useCallback(async () => {
+    setLoading(true);
     const zx = UA.map((ua) => {
       return calculateImpedance(ua, UR, RS);
     });
@@ -65,6 +78,8 @@ function App() {
     const timers = createTimeNodes(zx.length, second);
     const lines = mergeArraysToData(timers, zx);
     setLineData(lines); // 更新折线图数据
+    setLoading(false);
+    message.success("阻抗计算结束！折线图表已生成！");
   }, [UA, second, UR, RS]);
   // 创建并下载文本文件的函数
   const downloadZXData = () => {
@@ -108,115 +123,123 @@ function App() {
   };
 
   return (
-    <div className="container">
-      <Flex gap={24} horizontal wrap>
-        <Card
-          title="时间-阻抗变化趋势图"
-          hoverable
-          style={{ flex: "0 0 80%" }}
-          ref={lineRef}
-        >
-          <Meta description={`UR：${UR} V`} />
-          <Meta description={`RS：${RS} Ω`} />
-          <Meta description={`数据时长：${second} S`} />
-          <MyELine data={lineData} />
-        </Card>
-        <Card title="预填数据" hoverable style={{ flex: 1 }} ref={lineRef}>
-          <Flex gap={24} vertical>
-            <div>
-              <span>UR：</span>
-              <InputNumber
-                addonAfter="V"
-                step="0.000001"
-                onChange={changeUR}
-                stringMode
-                value={UR}
-              />
-            </div>
-            <div>
-              <span>RS：</span>
-              <InputNumber
-                addonAfter="Ω"
-                step="0.000001"
-                onChange={changeRS}
-                stringMode
-                value={RS}
-              />
-            </div>
-            <div>
-              <span>数据时长：</span>
-              <InputNumber
-                addonAfter="S"
-                step="1"
-                min={1}
-                onChange={changeSecond}
-                value={second}
-              />
-            </div>
-          </Flex>
-        </Card>
-        <Card
-          title="UA串口值"
-          style={{ flex: "0 0 60%" }}
-          hoverable
-          ref={lineRef}
-        >
-          <TextArea
-            readOnly
-            rows={3}
-            value={UA}
-            style={{ resize: "none" }}
-            className="textarea-custom"
-          />
-        </Card>
-        <Card style={{ flex: 1 }} hoverable ref={lineRef}>
-          <Flex gap={24} horizontal wrap justify="flex-start">
-            <div style={{flex: '0 0 100%', display: 'flex'}}>
-            <Timeline
-              mode="left"
-              items={[
-                {
-                  label: "步骤一",
-                  children: (
-                    <HexToDecimalConverter successTranfer={successTranfer} />
-                  ),
-                },
-                {
-                  label: "步骤二",
-                  children: (
-                    <Button
-                      type="primary"
-                      onClick={handleCalculateImpedance}
-                      className="downloadBtn"
-                    >
-                      计算阻抗
-                    </Button>
-                  ),
-                },
-              ]}
-            />
-            </div>
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={downloadZXData}
-              className="downloadBtn"
+    <Watermark
+      content={["早安， 吴彦祖", "开心每一天"]}
+      gap={[300, 300]}
+      font={{ fontWeight: "normal", fontSize: 14, color: "rgba(0,0,0,.09)" }}
+    >
+      <Spin spinning={loading}>
+        <div className="container">
+          <Flex gap={24} horizontal wrap>
+            <Card
+              title="时间-阻抗变化趋势图"
+              hoverable
+              className="item1"
+              ref={lineRef}
             >
-              保存阻抗数据
-            </Button>
-            <Button
-              icon={<DownloadOutlined />}
-              onClick={downloadLineData}
-              className="downloadBtn"
-            >
-              保存图表数据
-            </Button>
-            <Button icon={<DownloadOutlined />} onClick={downloadDivAsImage}>
-              保存图表为图片
-            </Button>
+              <Meta description={`UR：${UR} V`} />
+              <Meta description={`RS：${RS} Ω`} />
+              <Meta description={`数据时长：${second} S`} />
+              <MyELine data={lineData} />
+            </Card>
+            <Card title="预填数据" hoverable className="item2">
+              <Flex gap={24} vertical>
+                <div>
+                  <span>UR：</span>
+                  <InputNumber
+                    addonAfter="V"
+                    step="0.000001"
+                    onChange={changeUR}
+                    stringMode
+                    value={UR}
+                  />
+                </div>
+                <div>
+                  <span>RS：</span>
+                  <InputNumber
+                    addonAfter="Ω"
+                    step="0.000001"
+                    onChange={changeRS}
+                    stringMode
+                    value={RS}
+                  />
+                </div>
+                <div>
+                  <span>数据时长：</span>
+                  <InputNumber
+                    addonAfter="S"
+                    step="1"
+                    min={1}
+                    onChange={changeSecond}
+                    value={second}
+                  />
+                </div>
+              </Flex>
+            </Card>
+            <Card title="UA串口值" className="item3" hoverable>
+              <TextArea
+                readOnly
+                rows={5}
+                value={UA}
+                style={{ resize: "none" }}
+                className="textarea-custom"
+              />
+            </Card>
+            <Card className="item4" hoverable>
+              <Flex gap={24} horizontal wrap justify="flex-start">
+                <div style={{ flex: "0 0 100%", display: "flex" }}>
+                  <Timeline
+                    mode="left"
+                    items={[
+                      {
+                        label: "步骤一",
+                        children: (
+                          <HexToDecimalConverter
+                            successTranfer={successTranfer}
+                          />
+                        ),
+                      },
+                      {
+                        label: "步骤二",
+                        children: (
+                          <Button
+                            type="primary"
+                            onClick={handleCalculateImpedance}
+                            className="downloadBtn"
+                          >
+                            计算阻抗
+                          </Button>
+                        ),
+                      },
+                    ]}
+                  />
+                </div>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={downloadZXData}
+                  className="downloadBtn"
+                >
+                  保存阻抗数据
+                </Button>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={downloadLineData}
+                  className="downloadBtn"
+                >
+                  保存图表数据
+                </Button>
+                <Button
+                  icon={<DownloadOutlined />}
+                  onClick={downloadDivAsImage}
+                >
+                  保存图表为图片
+                </Button>
+              </Flex>
+            </Card>
           </Flex>
-        </Card>
-      </Flex>
-    </div>
+        </div>
+      </Spin>
+    </Watermark>
   );
 }
 
