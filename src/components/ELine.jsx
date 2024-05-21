@@ -41,5 +41,5 @@ export const MyELine = (props) => {
       },
     ],
   };
-  return <ReactEcharts option={options} style={{ height: '70vh', width: "80vw" }} />;
+  return <ReactEcharts option={options}/>;
 };
