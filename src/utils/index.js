@@ -63,17 +63,42 @@ export function mergeArraysToData(timeArray, zxArray) {
 
 export function sampleData(originalData, sampleRate) {
   if (!Array.isArray(originalData) || originalData.length === 0) {
-    throw new Error('原始数据必须是一个非空数组');
+    console.error('原始数据必须是一个非空数组');
+    return [];
   }
   if (typeof sampleRate !== 'number' || sampleRate <= 0) {
-    throw new Error('抽样率必须是一个大于0的数字');
+    console.error('抽样率必须是一个大于0的数字');
+    return [];
   }
-
-  const sampleStep = Math.ceil(originalData.length / sampleRate);
   let sampledData = [];
 
-  for (let i = 0; i < originalData.length; i += sampleStep) {
+  for (let i = 0; i < originalData.length; i += sampleRate) {
     sampledData.push(originalData[i]);
+  }
+
+  return sampledData;
+}
+export function sampleDataWithAverage(originalData, sampleRate) {
+  if (!Array.isArray(originalData) || originalData.length === 0) {
+    console.error('原始数据必须是一个非空数组');
+    return [];
+  }
+  if (typeof sampleRate !== 'number' || sampleRate <= 0) {
+    console.error('抽样率必须是一个大于0的数字');
+    return [];
+  }
+
+  let sampledData = [];
+
+  for (let i = 0; i < originalData.length; i += sampleRate) {
+    let segment = originalData.slice(i, i + sampleRate);
+    let avgZx = segment.reduce((sum, item) => sum + item.zx, 0) / segment.length;
+    let avgTime = segment[Math.floor(segment.length / 2)].time; // 取区间中间的时间点作为时间
+
+    sampledData.push({
+      time: avgTime,
+      zx: avgZx
+    });
   }
 
   return sampledData;

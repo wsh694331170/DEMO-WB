@@ -7,7 +7,6 @@ import {
   Timeline,
   Watermark,
   message,
-  Spin,
   Switch,
   Tooltip,
 } from "antd";
@@ -23,6 +22,7 @@ import {
   createTimeNodes,
   mergeArraysToData,
   sampleData,
+  sampleDataWithAverage,
 } from "./utils/index.js";
 import "./App.css";
 
@@ -35,8 +35,8 @@ function App() {
   const [UA, setUA] = useState([]);
   const [ZX, setZX] = useState([]);
   const [lineData, setLineData] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [checked, setChecked] = useState(false);
+  const [avghecked, setAvgChecked] = useState(false);
   const [sampleRate, setSampleRate] = useState(1000);
   const lineRef = useRef();
 
@@ -60,16 +60,16 @@ function App() {
   }, []);
 
   const changeRS = useCallback((value) => {
-    setRS(parseFloat(value) || 500);
+    setRS(parseFloat(value));
   }, []);
   const changeUR = useCallback((value) => {
-    setUR(parseFloat(value) || 60);
+    setUR(parseFloat(value));
   }, []);
   const changeSecond = useCallback((value) => {
     setSecond(value || 2);
   }, []);
   const changeSampleRate = useCallback((value) => {
-    setSampleRate(value || 1000);
+    setSampleRate(value);
   }, []);
 
   const successTranfer = useCallback((value) => {
@@ -77,23 +77,20 @@ function App() {
     message.success("串口数据读取成功！");
   }, []);
   const handleCalculateImpedance = useCallback(async () => {
-    setLoading(true);
     const zx = UA.map((ua) => {
       return calculateImpedance(ua, UR, RS);
     }).filter(Boolean);
     setZX(zx);
-    console.log(zx);
     const timers = createTimeNodes(zx.length, second);
-    const lines = mergeArraysToData(timers, zx);
+    let lines = mergeArraysToData(timers, zx);
+    console.log(1, lines.length);
+    if (checked) {
+      lines = avghecked ? sampleDataWithAverage(lines, sampleRate) : sampleData(lines, sampleRate);
+    }
+    console.log(2, lines.length);
     setLineData(lines); // 更新折线图数据
-    setLoading(false);
     message.success("阻抗计算结束！折线图表已生成！");
-  }, [UA, second, UR, RS]);
-
-  const handlesampleData = useCallback(() => {
-    const res = sampleData(lineData, sampleRate)
-    setLineData(res)
-  }, [lineData, sampleRate])
+  }, [UA, second, checked, UR, RS, avghecked, sampleRate]);
   // 创建并下载文本文件的函数
   const downloadZXData = () => {
     // 将数组转换为字符串，使用英文逗号分隔
@@ -141,62 +138,62 @@ function App() {
       gap={[300, 300]}
       font={{ fontWeight: "normal", fontSize: 14, color: "rgba(0,0,0,.09)" }}
     >
-      <Spin spinning={loading}>
-        <div className="container">
-          <Flex gap={24} horizontal wrap>
-            <Card
-              title="时间-阻抗变化趋势图"
-              hoverable
-              className="item1"
-              ref={lineRef}
-            >
-              <Meta description={`UR：${UR} V`} />
-              <Meta description={`RS：${RS} Ω`} />
-              <Meta description={`数据时长：${second} S`} />
-              <MyELine data={lineData} />
-            </Card>
-            <Card title="预填数据" hoverable className="item2">
-              <Flex gap={24} vertical>
-                <div>
-                  <span>UR：</span>
-                  <InputNumber
-                    addonAfter="V"
-                    step="0.000001"
-                    onChange={changeUR}
-                    stringMode
-                    value={UR}
-                  />
-                </div>
-                <div>
-                  <span>RS：</span>
-                  <InputNumber
-                    addonAfter="Ω"
-                    step="0.000001"
-                    onChange={changeRS}
-                    stringMode
-                    value={RS}
-                  />
-                </div>
-                <div>
-                  <span>数据时长：</span>
-                  <InputNumber
-                    addonAfter="S"
-                    step="1"
-                    min={1}
-                    onChange={changeSecond}
-                    value={second}
-                  />
-                </div>
-                <div>
-                  <span>是否开启数据抽样：</span>
-                  <Switch
-                    checkedChildren="开启"
-                    unCheckedChildren="关闭"
-                    checked={checked}
-                    onChange={(val) => setChecked(val)}
-                  />
-                </div>
-                {checked && (
+      <div className="container">
+        <Flex gap={24} horizontal wrap>
+          <Card
+            title="时间-阻抗变化趋势图"
+            hoverable
+            className="item1"
+            ref={lineRef}
+          >
+            <Meta description={`UR：${UR} V`} />
+            <Meta description={`RS：${RS} Ω`} />
+            <Meta description={`数据时长：${second} S`} />
+            <MyELine data={lineData} />
+          </Card>
+          <Card title="预填数据" hoverable className="item2">
+            <Flex gap={24} vertical>
+              <div>
+                <span>UR：</span>
+                <InputNumber
+                  addonAfter="V"
+                  step="0.000001"
+                  onChange={changeUR}
+                  stringMode
+                  value={UR}
+                />
+              </div>
+              <div>
+                <span>RS：</span>
+                <InputNumber
+                  addonAfter="Ω"
+                  step="0.000001"
+                  onChange={changeRS}
+                  stringMode
+                  value={RS}
+                />
+              </div>
+              <div>
+                <span>数据时长：</span>
+                <InputNumber
+                  addonAfter="S"
+                  step="1"
+                  min={1}
+                  onChange={changeSecond}
+                  value={second}
+                />
+              </div>
+              <div>
+                <span>是否开启数据抽样：</span>
+                <Switch
+                  checkedChildren="开启"
+                  unCheckedChildren="关闭"
+                  checked={checked}
+                  onChange={(val) => setChecked(val)}
+                />
+              </div>
+              {checked && (
+                <>
                   <div>
                     <Tooltip
                       title={`每${sampleRate}个数据点中只选一个进行绘制`}
@@ -213,76 +210,79 @@ function App() {
                       onChange={changeSampleRate}
                       value={sampleRate}
                     />
-                    <Button type="primary" onClick={handlesampleData}>
-                      开始抽样
-                    </Button>
                   </div>
-                )}
-              </Flex>
-            </Card>
-            <Card title="UA串口值" className="item3" hoverable>
-              <TextArea
-                readOnly
-                rows={5}
-                value={UA}
-                style={{ resize: "none" }}
-                className="textarea-custom"
-              />
-            </Card>
-            <Card className="item4" hoverable>
-              <Flex gap={24} horizontal wrap justify="flex-start">
-                <div style={{ flex: "0 0 100%", display: "flex" }}>
-                  <Timeline
-                    mode="left"
-                    items={[
-                      {
-                        label: "步骤一",
-                        children: (
-                          <HexToDecimalConverter
-                            successTranfer={successTranfer}
-                          />
-                        ),
-                      },
-                      {
-                        label: "步骤二",
-                        children: (
-                          <Button
-                            type="primary"
-                            onClick={handleCalculateImpedance}
-                            className="downloadBtn"
-                          >
-                            计算阻抗
-                          </Button>
-                        ),
-                      },
-                    ]}
-                  />
-                </div>
-                <Button
-                  icon={<DownloadOutlined />}
-                  onClick={downloadZXData}
-                  className="downloadBtn"
-                >
-                  保存阻抗数据
-                </Button>
-                <Button
-                  icon={<DownloadOutlined />}
-                  onClick={downloadLineData}
-                  className="downloadBtn"
-                >
-                  保存图表数据
-                </Button>
-                <Button
-                  icon={<DownloadOutlined />}
-                  onClick={downloadDivAsImage}
-                >
-                  保存图表为图片
-                </Button>
-              </Flex>
-            </Card>
-          </Flex>
-        </div>
-      </Spin>
+                  <div>
+                    <span>抽样数据是否平均：</span>
+                    <Switch
+                      checkedChildren="开启"
+                      unCheckedChildren="关闭"
+                      checked={avghecked}
+                      onChange={(val) => setAvgChecked(val)}
+                    />
+                  </div>
+                </>
+              )}
+            </Flex>
+          </Card>
+          <Card title="UA串口值" className="item3" hoverable>
+            <TextArea
+              readOnly
+              rows={5}
+              value={UA}
+              style={{ resize: "none" }}
+              className="textarea-custom"
+            />
+          </Card>
+          <Card className="item4" hoverable>
+            <Flex gap={24} horizontal wrap justify="flex-start">
+              <div style={{ flex: "0 0 100%", display: "flex" }}>
+                <Timeline
+                  mode="left"
+                  items={[
+                    {
+                      label: "步骤一",
+                      children: (
+                        <HexToDecimalConverter
+                          successTranfer={successTranfer}
+                        />
+                      ),
+                    },
+                    {
+                      label: "步骤二",
+                      children: (
+                        <Button
+                          type="primary"
+                          onClick={handleCalculateImpedance}
+                          className="downloadBtn"
+                        >
+                          计算阻抗
+                        </Button>
+                      ),
+                    },
+                  ]}
+                />
+              </div>
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={downloadZXData}
+                className="downloadBtn"
+              >
+                保存阻抗数据
+              </Button>
+              <Button
+                icon={<DownloadOutlined />}
+                onClick={downloadLineData}
+                className="downloadBtn"
+              >
+                保存图表数据
+              </Button>
+              <Button icon={<DownloadOutlined />} onClick={downloadDivAsImage}>
+                保存图表为图片
+              </Button>
+            </Flex>
+          </Card>
+        </Flex>
+      </div>
     </Watermark>
   );
 }
