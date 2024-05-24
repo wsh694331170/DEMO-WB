@@ -31,6 +31,20 @@ export const MyELine = (props) => {
         padding: [0, 10, 0, 0], // 调整名称的间距
       },
     },
+    dataZoom: [
+      {
+        type: 'slider', // 使用滑动条
+        start: 0, // 默认视图的起始点
+        end: 100, // 默认视图的结束点
+        xAxisIndex: [0] // 控制第一个 x 轴
+      },
+      {
+        type: 'inside', // 支持鼠标滚轮缩放
+        start: 0,
+        end: 100,
+        xAxisIndex: [0] // 控制第一个 x 轴
+      }
+    ],
     series: [
       {
         name: "zx",

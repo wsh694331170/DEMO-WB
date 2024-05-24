@@ -8,8 +8,10 @@ import {
   Watermark,
   message,
   Spin,
+  Switch,
+  Tooltip,
 } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { DownloadOutlined, QuestionCircleOutlined } from "@ant-design/icons";
 import { useState, useRef, useCallback } from "react";
 import { saveAs } from "file-saver";
 import * as htmlToImage from "html-to-image";
@@ -20,6 +22,7 @@ import {
   calculateImpedance,
   createTimeNodes,
   mergeArraysToData,
+  sampleData,
 } from "./utils/index.js";
 import "./App.css";
 
@@ -33,6 +36,8 @@ function App() {
   const [ZX, setZX] = useState([]);
   const [lineData, setLineData] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [checked, setChecked] = useState(false);
+  const [sampleRate, setSampleRate] = useState(1000);
   const lineRef = useRef();
 
   const downloadDivAsImage = useCallback(async () => {
@@ -63,6 +68,9 @@ function App() {
   const changeSecond = useCallback((value) => {
     setSecond(value || 2);
   }, []);
+  const changeSampleRate = useCallback((value) => {
+    setSampleRate(value || 1000);
+  }, []);
 
   const successTranfer = useCallback((value) => {
     setUA(value);
@@ -72,7 +80,7 @@ function App() {
     setLoading(true);
     const zx = UA.map((ua) => {
       return calculateImpedance(ua, UR, RS);
-    });
+    }).filter(Boolean);
     setZX(zx);
     console.log(zx);
     const timers = createTimeNodes(zx.length, second);
@@ -81,6 +89,11 @@ function App() {
     setLoading(false);
     message.success("阻抗计算结束！折线图表已生成！");
   }, [UA, second, UR, RS]);
+
+  const handlesampleData = useCallback(() => {
+    const res = sampleData(lineData, sampleRate)
+    setLineData(res)
+  }, [lineData, sampleRate])
   // 创建并下载文本文件的函数
   const downloadZXData = () => {
     // 将数组转换为字符串，使用英文逗号分隔
@@ -174,6 +187,37 @@ function App() {
                     value={second}
                   />
                 </div>
+                <div>
+                  <span>是否开启数据抽样：</span>
+                  <Switch
+                    checkedChildren="开启"
+                    unCheckedChildren="关闭"
+                    checked={checked}
+                    onChange={(val) => setChecked(val)}
+                  />
+                </div>
+                {checked && (
+                  <div>
+                    <Tooltip
+                      title={`每${sampleRate}个数据点中只选一个进行绘制`}
+                    >
+                      <span>
+                        抽样比例：
+                        <QuestionCircleOutlined />
+                      </span>
+                    </Tooltip>
+                    <InputNumber
+                      addonAfter="个"
+                      step="1"
+                      min={1}
+                      onChange={changeSampleRate}
+                      value={sampleRate}
+                    />
+                    <Button type="primary" onClick={handlesampleData}>
+                      开始抽样
+                    </Button>
+                  </div>
+                )}
               </Flex>
             </Card>
             <Card title="UA串口值" className="item3" hoverable>

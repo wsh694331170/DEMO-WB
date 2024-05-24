@@ -60,3 +60,21 @@ export function mergeArraysToData(timeArray, zxArray) {
 
   return data;
 }
+
+export function sampleData(originalData, sampleRate) {
+  if (!Array.isArray(originalData) || originalData.length === 0) {
+    throw new Error('原始数据必须是一个非空数组');
+  }
+  if (typeof sampleRate !== 'number' || sampleRate <= 0) {
+    throw new Error('抽样率必须是一个大于0的数字');
+  }
+
+  const sampleStep = Math.ceil(originalData.length / sampleRate);
+  let sampledData = [];
+
+  for (let i = 0; i < originalData.length; i += sampleStep) {
+    sampledData.push(originalData[i]);
+  }
+
+  return sampledData;
+}
