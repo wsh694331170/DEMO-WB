@@ -16,6 +16,7 @@ import { saveAs } from "file-saver";
 import * as htmlToImage from "html-to-image";
 import { nanoid } from "nanoid";
 import { MyELine } from "./components/ELine.jsx";
+import Tips from "./components/Tips.jsx";
 import HexToDecimalConverter from "./components/HexToDecimalConverter.jsx";
 import {
   calculateImpedance,
@@ -24,6 +25,7 @@ import {
   sampleData,
   sampleDataWithAverage,
 } from "./utils/index.js";
+import { WATERMARK_IMG } from './constants/index.js';
 import "./App.css";
 
 const { TextArea } = Input;
@@ -134,11 +136,14 @@ function App() {
 
   return (
     <Watermark
-      content={["早安， 吴彦祖", "开心每一天"]}
+      image={WATERMARK_IMG}
       gap={[300, 300]}
-      font={{ fontWeight: "normal", fontSize: 14, color: "rgba(0,0,0,.09)" }}
+      rotate={0}
+      width={100}
+      height={100}
     >
       <div className="container">
+        <Tips />
         <Flex gap={24} horizontal wrap>
           <Card
             title="时间-阻抗变化趋势图"
