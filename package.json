@@ -95,8 +95,8 @@
           "name": "@electron-forge/publisher-github",
           "config": {
             "repository": {
-              "owner": "your-github-username",
-              "name": "your-repo-name"
+              "owner": "wsh694331170",
+              "name": "DEMO-WB"
             },
             "prerelease": false,
             "draft": true
