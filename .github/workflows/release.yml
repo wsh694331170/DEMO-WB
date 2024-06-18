@@ -1,4 +1,4 @@
-name: Release
+name: release
 
 on:
   push:
@@ -6,25 +6,97 @@ on:
       - 'v*.*.*'
 
 jobs:
-  release:
+  prerelease-macos:
+    runs-on: macos-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+        target: [dmg, zip]
+        # include:
+        #   - arch: arm64
+        #     target: dmg
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install Python 3.11.4
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11.4'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build application
+      run: npm run build
+
+    - name: Use GitHub Token in a script
+      run: |
+        curl -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/actions/secrets
+      
+    - name: Package application for macOS ${{ matrix.arch }} ${{ matrix.target }}
+      run: npx electron-forge publish --platform=darwin --arch=${{ matrix.arch }} --targets="@electron-forge/maker-${{ matrix.target }}" --icon=public/avatar
+  
+  prerelease-linux:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    strategy:
+      matrix:
+        arch: [x64, arm64]
+        target: [deb, zip]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build application
+      run: npm run build
+
+    - name: Use GitHub Token in a script
+      run: |
+        curl -H "Authorization: token ${{ secrets.PERSONAL_ACCESS_TOKEN }}" https://api.github.com/repos/${{ github.repository }}/actions/secrets
+      
+    - name: Package application for Linux ${{ matrix.arch }} ${{ matrix.target }}
+      run: npx electron-forge publish --platform=linux --arch=${{ matrix.arch }} --targets="@electron-forge/maker-${{ matrix.target }}" --icon=public/avatar
+
+  prerelease-windows:
+    runs-on: windows-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+    strategy:
+      matrix:
+        arch: [x64, ia32]
+        target: [squirrel, zip]
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: npm install
 
-      - name: Install dependencies
-        run: npm install
+    - name: Build application
+      run: npm run build
 
-      - name: Make Electron app
-        run: npm run make
-
-      - name: Publish to GitHub Releases
-        env:
-          GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-        run: npm run publish
+    - name: Package application for Windows ${{ matrix.arch }} ${{ matrix.target }}
+      run: npx electron-forge publish --platform=win32 --arch=${{ matrix.arch }} --targets="@electron-forge/maker-${{ matrix.target }}" --icon=public/avatar
