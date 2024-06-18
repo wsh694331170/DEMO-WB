@@ -4,8 +4,6 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 module.exports = {
   packagerConfig: {
     asar: true,
-    // 添加目标架构
-    arch: ['x64', 'ia32', 'arm64']
   },
   rebuildConfig: {},
   makers: [
