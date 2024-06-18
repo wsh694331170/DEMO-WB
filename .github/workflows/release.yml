@@ -24,9 +24,6 @@ jobs:
       - name: Make Electron app
         run: npm run make
 
-      - name: Debug Environment Variables
-        run: env | grep GITHUB_TOKEN
-
       - name: Publish to GitHub Releases
         env:
           GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
