@@ -99,7 +99,8 @@
               "name": "DEMO-WB"
             },
             "prerelease": false,
-            "draft": true
+            "draft": true,
+            "authToken": "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"
           }
         }
       ]
