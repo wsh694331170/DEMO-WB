@@ -100,7 +100,7 @@
             },
             "prerelease": false,
             "draft": true,
-            "authToken": "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"
+            "authToken": "${GITHUB_TOKEN}"
           }
         }
       ]
