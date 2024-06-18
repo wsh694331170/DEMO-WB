@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { Alert, Button, Drawer, Typography } from "antd";
 
-const { Title, Paragraph, Text, Link } = Typography;
+const { Title, Paragraph } = Typography;
 
 const Info = () => {
   const [open, setOpen] = useState(false);
-
-  const openOperateStep = () => {};
 
   const openDocument = () => {
     setOpen(true);
@@ -72,7 +70,7 @@ const Info = () => {
   );
 };
 
-const Tips = (props) => {
+const Tips = () => {
   return <Alert message={<Info />} closable type="success" />;
 };
 
