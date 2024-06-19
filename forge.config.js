@@ -10,12 +10,14 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        "name": "my_app"
+        name: "my-electron-app",
+        authors: "My Company",
+        description: "An example Electron application"
       },
     },
     {
       name: '@electron-forge/maker-zip',
-      platforms: ['darwin'],
+      platforms: ['darwin', 'win32'],
     },
     {
       name: '@electron-forge/maker-deb',
